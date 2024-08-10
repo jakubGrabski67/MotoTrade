@@ -12,6 +12,7 @@ datasource db {
 
 model Car {
   id                     String   @id @default(uuid())
+  name                   String
   brand                  String
   model                  String
   year                   Int
@@ -19,6 +20,8 @@ model Car {
   fuelType               String
   priceInCents           Int
   description            String
+  filePath               String
+  imagePath              String
   isAvailableForPurchase Boolean  @default(true)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt

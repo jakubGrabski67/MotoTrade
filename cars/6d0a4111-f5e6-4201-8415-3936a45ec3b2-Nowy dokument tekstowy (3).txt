@@ -1,0 +1,13 @@
+Frontend:
+1.Angular.js/typeScript
+2.tailwindCss/styled components
+
+
+Backend:
+1.Node.js
+2.MongoDB
+3.aws services (S3) -zdjęcia produktów
+
+
+1.zrobic repo na bitbucket
+2.zrobic tablice na jira

@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "Car" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
     "brand" TEXT NOT NULL,
     "model" TEXT NOT NULL,
     "year" INTEGER NOT NULL,
@@ -8,6 +9,8 @@ CREATE TABLE "Car" (
     "fuelType" TEXT NOT NULL,
     "priceInCents" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
+    "filePath" TEXT NOT NULL,
+    "imagePath" TEXT NOT NULL,
     "isAvailableForPurchase" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
