@@ -27,10 +27,6 @@ yarn-error.log*
 
 # local env files
 .env*.local
-/.env
-/.env*
-/.env.local
-/.env*.local
 
 # vercel
 .vercel
@@ -40,3 +36,4 @@ yarn-error.log*
 next-env.d.ts
 /cars
 /public/cars
+.env
