@@ -6,18 +6,28 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { useState } from "react";
-import { addCar } from "../../_actions/cars";
+import { addCar, updateCar } from "../../_actions/cars";
 import { useFormState, useFormStatus } from "react-dom";
+import { Car } from "@prisma/client";
+import Image from "next/image";
 
-export function CarForm() {
-  const [error, action] = useFormState(addCar, {});
-  const [priceInCents, setPriceInCents] = useState<number>();
+export function CarForm({ car }: { car?: Car | null }) {
+  const [error, action] = useFormState(car == null ? addCar : updateCar.bind(null, car.id), {});
+  const [priceInCents, setPriceInCents] = useState<number | undefined>(
+    car?.priceInCents
+  );
 
   return (
     <form action={action} className="space-y-8">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
-        <Input type="text" id="name" name="name" required />
+        <Input
+          type="text"
+          id="name"
+          name="name"
+          required
+          defaultValue={car?.name || ""}
+        />
         {error.name && <div className="text-destructive">{error.name}</div>}
       </div>
       <div className="space-y-2">
@@ -39,48 +49,89 @@ export function CarForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="brand">Brand</Label>
-        <Input type="text" id="brand" name="brand" required />
+        <Input
+          type="text"
+          id="brand"
+          name="brand"
+          required
+          defaultValue={car?.brand || ""}
+        />
         {error.brand && <div className="text-destructive">{error.brand}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="model">Model</Label>
-        <Input type="text" id="model" name="model" required />
+        <Input
+          type="text"
+          id="model"
+          name="model"
+          required
+          defaultValue={car?.model || ""}
+        />
         {error.model && <div className="text-destructive">{error.model}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="year">Year</Label>
-        <Input type="text" id="year" name="year" required />
+        <Input
+          type="text"
+          id="year"
+          name="year"
+          required
+          defaultValue={car?.year || 0}
+        />
         {error.year && <div className="text-destructive">{error.year}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="mileage">Mileage</Label>
-        <Input type="text" id="mileage" name="mileage" required />
+        <Input
+          type="text"
+          id="mileage"
+          name="mileage"
+          required
+          defaultValue={car?.mileage || 0}
+        />
         {error.mileage && (
           <div className="text-destructive">{error.mileage}</div>
         )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="fuelType">Fuel Type</Label>
-        <Input type="text" id="fuelType" name="fuelType" required />
+        <Input
+          type="text"
+          id="fuelType"
+          name="fuelType"
+          required
+          defaultValue={car?.fuelType || ""}
+        />
         {error.fuelType && (
           <div className="text-destructive">{error.fuelType}</div>
         )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea id="description" name="description" required />
+        <Textarea
+          id="description"
+          name="description"
+          required
+          defaultValue={car?.description || ""}
+        />
         {error.description && (
           <div className="text-destructive">{error.description}</div>
         )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="file">File</Label>
-        <Input type="file" id="file" name="file" required />
+        <Input type="file" id="file" name="file" required={car == null} />
+        {car != null && (
+          <div className="text-muted-foreground">{car.filePath}</div>
+        )}
         {error.file && <div className="text-destructive">{error.file}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="image">Image</Label>
-        <Input type="file" id="image" name="image" required />
+        <Input type="file" id="image" name="image" required={car == null} />
+        {car != null && (
+          <Image src={car.imagePath} height="400" width="400" alt="Car Image" />
+        )}
         {error.image && <div className="text-destructive">{error.image}</div>}
       </div>
       <SubmitButton />

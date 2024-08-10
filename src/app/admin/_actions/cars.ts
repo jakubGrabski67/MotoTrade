@@ -3,7 +3,7 @@
 import db from "@/db/db";
 import { z } from "zod";
 import fs from "fs/promises";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema.refine(
@@ -44,6 +44,7 @@ export async function addCar(prevState: unknown, formData: FormData) {
 
   await db.car.create({
     data: {
+      isAvailableForPurchase: false,
       name: data.name,
       brand: data.brand,
       model: data.model,
@@ -58,4 +59,75 @@ export async function addCar(prevState: unknown, formData: FormData) {
   });
 
   redirect("/admin/cars");
+}
+
+const editSchema = addSchema.extend({
+  file: fileSchema.optional(),
+  image: imageSchema.optional(),
+});
+
+export async function updateCar(
+  id: string,
+  prevState: unknown,
+  formData: FormData
+) {
+  const result = editSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors;
+  }
+
+  const data = result.data;
+  const car = await db.car.findUnique({ where: { id } });
+
+  if (car == null) return notFound();
+
+  let filePath = car.filePath;
+  if (data.file != null && data.file.size > 0) {
+    await fs.unlink(car.filePath);
+    filePath = `cars/${crypto.randomUUID()}-${data.file.name}`;
+    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+  }
+
+  let imagePath = car.imagePath;
+  if (data.image != null && data.image.size > 0) {
+    await fs.unlink(`public${car.imagePath}`);
+    imagePath = `/cars/${crypto.randomUUID()}-${data.image.name}`;
+    await fs.writeFile(
+      `public/${imagePath}`,
+      Buffer.from(await data.image.arrayBuffer())
+    );
+  }
+
+  await db.car.update({
+    where: { id },
+    data: {
+      name: data.name,
+      brand: data.brand,
+      model: data.model,
+      year: data.year,
+      mileage: data.mileage,
+      fuelType: data.fuelType,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      filePath,
+      imagePath,
+    },
+  });
+
+  redirect("/admin/cars");
+}
+
+export async function toggleCarAvailability(
+  id: string,
+  isAvailableForPurchase: boolean
+) {
+  await db.car.update({ where: { id }, data: { isAvailableForPurchase } });
+}
+
+export async function deleteCar(id: string) {
+  const car = await db.car.delete({ where: { id } });
+  if (car == null) return notFound();
+
+  await fs.unlink(car.filePath);
+  await fs.unlink(`public${car.imagePath}`);
 }
