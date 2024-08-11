@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Car {
-  id                     String   @id @default(uuid())
+  id                     String                 @id @default(uuid())
   name                   String
   brand                  String
   model                  String
@@ -22,10 +22,11 @@ model Car {
   description            String
   filePath               String
   imagePath              String
-  isAvailableForPurchase Boolean  @default(true)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  isAvailableForPurchase Boolean                @default(true)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
   Order                  Order[]
+  downloadVerifications  DownloadVerification[]
 }
 
 model User {
@@ -46,4 +47,12 @@ model Order {
   carId  String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   car    Car    @relation(fields: [carId], references: [id], onDelete: Restrict)
+}
+
+model DownloadVerification {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
 }
