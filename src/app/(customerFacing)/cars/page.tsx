@@ -1,15 +1,16 @@
 import { CarCard, CarCardSkeleton } from "@/components/CarCard";
 import db from "@/db/db";
+import { cache } from "@/lib/cache";
 import { Suspense } from "react";
 
-function getCars() {
+const getCars = cache(() => {
   return db.car.findMany({
     where: {
       isAvailableForPurchase: true,
     },
     orderBy: { name: "asc" },
   });
-}
+},["/cars", "getCars"])
 
 export default function CarsPage() {
   return (

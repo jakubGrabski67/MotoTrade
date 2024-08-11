@@ -1,26 +1,31 @@
 import { CarCard, CarCardSkeleton } from "@/components/CarCard";
 import { Button } from "@/components/ui/button";
 import db from "@/db/db";
+import { cache } from "@/lib/cache";
 import { Car } from "@prisma/client";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-function getMostPopularCars() {
-  return db.car.findMany({
-    where: { isAvailableForPurchase: true },
-    orderBy: { Order: { _count: "desc" } },
-    take: 6,
-  });
-}
+const getMostPopularCars = cache(
+  () => {
+    return db.car.findMany({
+      where: { isAvailableForPurchase: true },
+      orderBy: { Order: { _count: "desc" } },
+      take: 6,
+    });
+  },
+  ["/", "getMostPopularCars"],
+  { revalidate: 60 * 60 * 24 }
+);
 
-function getNewestCars() {
+const getNewestCars = cache(() => {
   return db.car.findMany({
     where: { isAvailableForPurchase: true },
     orderBy: { createdAt: "desc" },
     take: 6,
   });
-}
+}, ["/", "getNewestCars"]);
 
 export default function HomePage() {
   return (
