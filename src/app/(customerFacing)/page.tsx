@@ -30,6 +30,7 @@ const getNewestCars = cache(() => {
 export default function HomePage() {
   return (
     <main className="space-y-12">
+      <div>FILTRY</div>
       <CarGridSection title="Most Popular" carsFetcher={getMostPopularCars} />
       <CarGridSection title="Newest" carsFetcher={getNewestCars} />
     </main>

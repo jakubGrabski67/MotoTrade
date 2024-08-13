@@ -10,12 +10,31 @@ import { addCar, updateCar } from "../../_actions/cars";
 import { useFormState, useFormStatus } from "react-dom";
 import { Car } from "@prisma/client";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function CarForm({ car }: { car?: Car | null }) {
-  const [error, action] = useFormState(car == null ? addCar : updateCar.bind(null, car.id), {});
+  const [error, action] = useFormState(
+    car == null ? addCar : updateCar.bind(null, car.id),
+    {}
+  );
   const [priceInCents, setPriceInCents] = useState<number | undefined>(
     car?.priceInCents
   );
+  const [selectedBrand, setSelectedBrand] = useState<string | undefined>(
+    car?.brand
+  );
+
+  const handleBrandChange = (value: string) => {
+    setSelectedBrand(value);
+  };
 
   return (
     <form action={action} className="space-y-8">
@@ -49,13 +68,38 @@ export function CarForm({ car }: { car?: Car | null }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="brand">Brand</Label>
-        <Input
-          type="text"
-          id="brand"
+        <Select
           name="brand"
           required
-          defaultValue={car?.brand || ""}
-        />
+          value={selectedBrand}
+          onValueChange={handleBrandChange}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a car brand" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Most popular</SelectLabel>
+              <SelectItem value="BMW">BMW</SelectItem>
+              <SelectItem value="Audi">Audi</SelectItem>
+              <SelectItem value="Volkswagen">Volkswagen</SelectItem>
+              <SelectItem value="Ford">Ford</SelectItem>
+              <SelectItem value="Mercedes-Benz">Mercedes-Benz</SelectItem>
+              <SelectItem value="Opel">Opel</SelectItem>
+              <SelectItem value="Toyota">Toyota</SelectItem>
+              <SelectItem value="Skoda">Skoda</SelectItem>
+              <SelectItem value="Renault">Renault</SelectItem>
+              <SelectItem value="Peugeot">Peugeot</SelectItem>
+            </SelectGroup>
+            <SelectGroup>
+              <SelectLabel>Alphabetical</SelectLabel>
+              <SelectItem value="art">Argentina Time (ART)</SelectItem>
+              <SelectItem value="bot">Bolivia Time (BOT)</SelectItem>
+              <SelectItem value="brt">Brasilia Time (BRT)</SelectItem>
+              <SelectItem value="clt">Chile Standard Time (CLT)</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
         {error.brand && <div className="text-destructive">{error.brand}</div>}
       </div>
       <div className="space-y-2">
@@ -76,7 +120,7 @@ export function CarForm({ car }: { car?: Car | null }) {
           id="year"
           name="year"
           required
-          defaultValue={car?.year || 0}
+          defaultValue={car?.year || ""}
         />
         {error.year && <div className="text-destructive">{error.year}</div>}
       </div>
@@ -87,7 +131,7 @@ export function CarForm({ car }: { car?: Car | null }) {
           id="mileage"
           name="mileage"
           required
-          defaultValue={car?.mileage || 0}
+          defaultValue={car?.mileage || ""}
         />
         {error.mileage && (
           <div className="text-destructive">{error.mileage}</div>
@@ -147,5 +191,3 @@ function SubmitButton() {
     </Button>
   );
 }
-
-//1:04:06

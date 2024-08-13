@@ -2,7 +2,6 @@
 CREATE TABLE "Car" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "brand" TEXT NOT NULL,
     "model" TEXT NOT NULL,
     "year" INTEGER NOT NULL,
     "mileage" INTEGER NOT NULL,
@@ -12,6 +11,17 @@ CREATE TABLE "Car" (
     "filePath" TEXT NOT NULL,
     "imagePath" TEXT NOT NULL,
     "isAvailableForPurchase" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "brandId" TEXT NOT NULL,
+    "brandName" TEXT NOT NULL,
+    CONSTRAINT "Car_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Brand" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "brandName" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -44,6 +54,9 @@ CREATE TABLE "DownloadVerification" (
     "carId" TEXT NOT NULL,
     CONSTRAINT "DownloadVerification_carId_fkey" FOREIGN KEY ("carId") REFERENCES "Car" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Brand_brandName_key" ON "Brand"("brandName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
