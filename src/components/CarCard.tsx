@@ -42,6 +42,9 @@ export function CarCard({
         <Button asChild size="lg" className="w-full">
           <Link href={`/cars/${id}/purchase`}>Purchase</Link>
         </Button>
+        <Button asChild size="lg" className="w-full">
+          <Link href={`/cars/${id}/details`}>View details</Link>
+        </Button>
       </CardFooter>
     </Card>
   );

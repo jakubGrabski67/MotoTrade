@@ -18,7 +18,7 @@ export default async function PurchasePage({
   const paymentIntent = await stripe.paymentIntents.create({
     amount: car.priceInCents,
     currency: "USD",
-    metadata: { carId: car.id }, // {productId: car.id}
+    metadata: { carId: car.id },
   });
 
   if (paymentIntent.client_secret == null) {

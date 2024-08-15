@@ -2,26 +2,40 @@
 CREATE TABLE "Car" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
+    "brand" TEXT NOT NULL,
     "model" TEXT NOT NULL,
     "year" INTEGER NOT NULL,
     "mileage" INTEGER NOT NULL,
     "fuelType" TEXT NOT NULL,
+    "gearboxType" TEXT NOT NULL,
+    "bodyType" TEXT NOT NULL,
+    "engineDisplacement" INTEGER NOT NULL,
+    "horsePower" INTEGER NOT NULL,
+    "VIN" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "generation" TEXT NOT NULL,
+    "doorsAmount" INTEGER NOT NULL,
+    "seatsAmount" INTEGER NOT NULL,
+    "color" TEXT NOT NULL,
+    "colorType" TEXT NOT NULL,
+    "drivetrain" TEXT NOT NULL,
+    "CO2Emission" TEXT NOT NULL,
+    "cityFuelConsumption" TEXT NOT NULL,
+    "outOfCityFuelConsumption" TEXT NOT NULL,
+    "countryOfOrigin" TEXT NOT NULL,
+    "hasRegistrationNumber" TEXT NOT NULL,
+    "registeredInPoland" TEXT NOT NULL,
+    "driverPlateNumber" TEXT NOT NULL,
+    "firstRegistrationDate" TEXT NOT NULL,
+    "isFirstOwner" TEXT NOT NULL,
+    "servicedInASO" TEXT NOT NULL,
     "priceInCents" INTEGER NOT NULL,
+    "isNew" TEXT NOT NULL,
+    "canNegotiate" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "filePath" TEXT NOT NULL,
     "imagePath" TEXT NOT NULL,
     "isAvailableForPurchase" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "brandId" TEXT NOT NULL,
-    "brandName" TEXT NOT NULL,
-    CONSTRAINT "Car_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Brand" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "brandName" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -56,7 +70,10 @@ CREATE TABLE "DownloadVerification" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Brand_brandName_key" ON "Brand"("brandName");
+CREATE UNIQUE INDEX "Car_VIN_key" ON "Car"("VIN");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Car_driverPlateNumber_key" ON "Car"("driverPlateNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");

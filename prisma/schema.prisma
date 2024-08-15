@@ -11,23 +11,53 @@ datasource db {
 }
 
 model Car {
-  id                     String                 @id @default(uuid())
-  name                   String
-  brand                  String
-  model                  String
-  year                   Int
-  mileage                Int
-  fuelType               String
-  priceInCents           Int
-  description            String
-  filePath               String
-  imagePath              String
-  isAvailableForPurchase Boolean                @default(true)
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  Order                  Order[]
-  downloadVerifications  DownloadVerification[]
+  id                       String                 @id @default(uuid())
+  name                     String
+  brand                    String
+  model                    String
+  year                     Int
+  mileage                  Int
+  fuelType                 String
+  gearboxType              String
+  bodyType                 String
+  engineDisplacement       Int
+  horsePower               Int
+  VIN                      String                 @unique
+  version                  String
+  generation               String
+  doorsAmount              Int
+  seatsAmount              Int
+  color                    String
+  colorType                String
+  drivetrain               String
+  CO2Emission              String
+  cityFuelConsumption      String
+  outOfCityFuelConsumption String
+  countryOfOrigin          String
+  hasRegistrationNumber    String
+  registeredInPoland       String
+  driverPlateNumber        String                 @unique
+  firstRegistrationDate    String
+  isFirstOwner             String
+  servicedInASO            String
+  priceInCents             Int
+  isNew                    String
+  canNegotiate             String
+  description              String
+  filePath                 String
+  imagePath                String
+  isAvailableForPurchase   Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  Order                    Order[]
+  downloadVerifications    DownloadVerification[]
+  
 }
+
+//model Comfort - tablica items
+//model Safety - tablica items
+//model AudioAndMultimedia - tablica items
+//model Other - tablica items
 
 model User {
   id        String   @id @default(uuid())
