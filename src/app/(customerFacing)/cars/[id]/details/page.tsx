@@ -1,22 +1,13 @@
-// src/app/car/[id]/page.tsx
-
-import { PrismaClient } from '@prisma/client';
 import { PageHeader } from "@/app/admin/_components/PageHeader";
+import db from "@/db/db";
 import { CarViewForm } from "@/app/(customerFacing)/_components/CarViewForm";
-
-const prisma = new PrismaClient();
 
 export default async function CarViewDetails({
   params: { id },
 }: {
   params: { id: string };
 }) {
-  // Pobierz samochód z opcjami komfortu
-  const car = await prisma.car.findUnique({
-    where: { id },
-    include: { comforts: true }, // Pobierz opcje komfortu
-  });
-
+  const car = await db.car.findUnique({ where: { id } });
   return (
     <>
       {/* <PageHeader>View offer</PageHeader> */}
