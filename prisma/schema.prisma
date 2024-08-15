@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Car {
-  id                       String                 @id @default(uuid())
+  id                       String                   @id @default(uuid())
   name                     String
   brand                    String
   model                    String
@@ -22,7 +22,7 @@ model Car {
   bodyType                 String
   engineDisplacement       Int
   horsePower               Int
-  VIN                      String                 @unique
+  VIN                      String                   @unique
   version                  String
   generation               String
   doorsAmount              Int
@@ -36,7 +36,7 @@ model Car {
   countryOfOrigin          String
   hasRegistrationNumber    String
   registeredInPoland       String
-  driverPlateNumber        String                 @unique
+  driverPlateNumber        String                   @unique
   firstRegistrationDate    String
   isFirstOwner             String
   servicedInASO            String
@@ -46,18 +46,44 @@ model Car {
   description              String
   filePath                 String
   imagePath                String
-  isAvailableForPurchase   Boolean                @default(true)
-  createdAt                DateTime               @default(now())
-  updatedAt                DateTime               @updatedAt
+  isAvailableForPurchase   Boolean                  @default(true)
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
   Order                    Order[]
   downloadVerifications    DownloadVerification[]
-  
+  comfortList              ComfortList[]            @relation("CarComfortList")
+  safetyList               SafetyList[]             @relation("CarSafetyList")
+  audioAndMultimediaList   AudioAndMultimediaList[] @relation("CarAudioAndMultimediaList")
+  otherList                OtherList[]              @relation("CarOtherList")
 }
 
-//model Comfort - tablica items
-//model Safety - tablica items
-//model AudioAndMultimedia - tablica items
-//model Other - tablica items
+model ComfortList {
+  id    String @id @default(uuid())
+  name  String
+  carId String
+  car   Car    @relation(name: "CarComfortList", fields: [carId], references: [id], onDelete: Cascade)
+}
+
+model SafetyList {
+  id    String @id @default(uuid())
+  name  String
+  carId String
+  car   Car    @relation(name: "CarSafetyList", fields: [carId], references: [id], onDelete: Cascade)
+}
+
+model AudioAndMultimediaList {
+  id    String @id @default(uuid())
+  name  String
+  carId String
+  car   Car    @relation(name: "CarAudioAndMultimediaList", fields: [carId], references: [id], onDelete: Cascade)
+}
+
+model OtherList {
+  id    String @id @default(uuid())
+  name  String
+  carId String
+  car   Car    @relation(name: "CarOtherList", fields: [carId], references: [id], onDelete: Cascade)
+}
 
 model User {
   id        String   @id @default(uuid())

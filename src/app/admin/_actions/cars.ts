@@ -44,6 +44,10 @@ const addSchema = z.object({
   canNegotiate: z.string().min(1),
   description: z.string().min(1),
   priceInCents: z.coerce.number().int().min(1),
+  comfortList: z.array(z.string().min(1)).optional(),
+  safetyList: z.array(z.string().min(1)).optional(),
+  audioAndMultimediaList: z.array(z.string().min(1)).optional(),
+  otherList: z.array(z.string().min(1)).optional(),
   file: fileSchema.refine((file) => file.size > 0, "Required"),
   image: imageSchema.refine((file) => file.size > 0, "Required"),
 });
@@ -67,7 +71,7 @@ export async function addCar(prevState: unknown, formData: FormData) {
     Buffer.from(await data.image.arrayBuffer())
   );
 
-  await db.car.create({
+  const car = await db.car.create({
     data: {
       isAvailableForPurchase: false,
       name: data.name,
@@ -106,7 +110,43 @@ export async function addCar(prevState: unknown, formData: FormData) {
       imagePath,
     },
   });
-  console.log(data);
+
+  if (data.comfortList && data.comfortList.length > 0) {
+    await db.comfortList.createMany({
+      data: data.comfortList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.safetyList && data.safetyList.length > 0) {
+    await db.safetyList.createMany({
+      data: data.safetyList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.audioAndMultimediaList && data.audioAndMultimediaList.length > 0) {
+    await db.audioAndMultimediaList.createMany({
+      data: data.audioAndMultimediaList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.otherList && data.otherList.length > 0) {
+    await db.otherList.createMany({
+      data: data.otherList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
   revalidatePath("/");
   revalidatePath("/cars");
 
@@ -166,6 +206,46 @@ export async function updateCar(
     },
   });
 
+  if (data.comfortList) {
+    await db.comfortList.deleteMany({ where: { carId: car.id } });
+    await db.comfortList.createMany({
+      data: data.comfortList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.safetyList) {
+    await db.safetyList.deleteMany({ where: { carId: car.id } });
+    await db.safetyList.createMany({
+      data: data.safetyList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.audioAndMultimediaList) {
+    await db.audioAndMultimediaList.deleteMany({ where: { carId: car.id } });
+    await db.audioAndMultimediaList.createMany({
+      data: data.audioAndMultimediaList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
+  if (data.otherList) {
+    await db.otherList.deleteMany({ where: { carId: car.id } });
+    await db.otherList.createMany({
+      data: data.otherList.map((name) => ({
+        name,
+        carId: car.id,
+      })),
+    });
+  }
+
   revalidatePath("/");
   revalidatePath("/cars");
 
@@ -188,6 +268,10 @@ export async function deleteCar(id: string) {
 
   await fs.unlink(car.filePath);
   await fs.unlink(`public${car.imagePath}`);
+  await db.comfortList.deleteMany({ where: { carId: id } });
+  await db.safetyList.deleteMany({ where: { carId: id } });
+  await db.audioAndMultimediaList.deleteMany({ where: { carId: id } });
+  await db.otherList.deleteMany({ where: { carId: id } });
 
   revalidatePath("/");
   revalidatePath("/cars");

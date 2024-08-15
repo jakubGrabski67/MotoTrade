@@ -7,7 +7,16 @@ export default async function CarViewDetails({
 }: {
   params: { id: string };
 }) {
-  const car = await db.car.findUnique({ where: { id } });
+  const car = await db.car.findUnique({
+    where: { id },
+    include: {
+      comfortList: true,
+      safetyList: true,
+      audioAndMultimediaList: true,
+      otherList: true,
+    },
+  });
+
   return (
     <>
       {/* <PageHeader>View offer</PageHeader> */}
