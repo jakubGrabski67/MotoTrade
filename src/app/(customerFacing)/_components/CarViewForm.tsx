@@ -3,7 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatters";
 import { useState } from "react";
-import { ComfortList,SafetyList,AudioAndMultimediaList,OtherList, Car as PrismaCar } from "@prisma/client";
+import {
+  ComfortList,
+  SafetyList,
+  AudioAndMultimediaList,
+  OtherList,
+  Car as PrismaCar,
+} from "@prisma/client";
 import Image from "next/image";
 import {
   Carousel,

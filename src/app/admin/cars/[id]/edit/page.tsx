@@ -7,11 +7,25 @@ export default async function EditCarPage({
 }: {
   params: { id: string };
 }) {
-  const car = await db.car.findUnique({ where: { id } });
+  const car = await db.car.findUnique({
+    where: { id },
+  });
+
+  const comfortList = await db.comfortList.findMany({});
+  const safetyList = await db.safetyList.findMany({});
+  const audioAndMultimediaList = await db.audioAndMultimediaList.findMany({});
+  const otherList = await db.otherList.findMany({});
+
   return (
     <>
       <PageHeader>Edit Car</PageHeader>
-      <CarForm car={car} />
+      <CarForm
+        car={car}
+        comfortList={comfortList}
+        safetyList={safetyList}
+        audioAndMultimediaList={audioAndMultimediaList}
+        otherList={otherList}
+      />
     </>
   );
 }

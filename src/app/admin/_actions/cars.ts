@@ -5,6 +5,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { PrismaClient } from "@prisma/client";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema.refine(
@@ -44,34 +45,99 @@ const addSchema = z.object({
   canNegotiate: z.string().min(1),
   description: z.string().min(1),
   priceInCents: z.coerce.number().int().min(1),
-  comfortList: z.array(z.string().min(1)).optional(),
-  safetyList: z.array(z.string().min(1)).optional(),
-  audioAndMultimediaList: z.array(z.string().min(1)).optional(),
-  otherList: z.array(z.string().min(1)).optional(),
   file: fileSchema.refine((file) => file.size > 0, "Required"),
   image: imageSchema.refine((file) => file.size > 0, "Required"),
+  comfortList: z.array(z.string().min(1)),
+  safetyList: z.array(z.string().min(1)),
+  audioAndMultimediaList: z.array(z.string().min(1)),
+  otherList: z.array(z.string().min(1)),
 });
 
 export async function addCar(prevState: unknown, formData: FormData) {
-  const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (result.success === false) {
+  type ParsedData = {
+    [key: string]: string | File | undefined;
+    comfortList?: string;
+    safetyList?: string;
+    audioAndMultimediaList?: string;
+    otherList?: string;
+    file?: File;
+    image?: File;
+  };
+
+  const parsedData: ParsedData = Object.fromEntries(formData.entries());
+
+  let comfortList: string[] = [];
+  let safetyList: string[] = [];
+  let audioAndMultimediaList: string[] = [];
+  let otherList: string[] = [];
+
+  if (parsedData.comfortList && typeof parsedData.comfortList === "string") {
+    try {
+      comfortList = JSON.parse(parsedData.comfortList) as string[];
+    } catch (error) {
+      return { comfortList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (parsedData.safetyList && typeof parsedData.safetyList === "string") {
+    try {
+      safetyList = JSON.parse(parsedData.safetyList) as string[];
+    } catch (error) {
+      return { safetyList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (
+    parsedData.audioAndMultimediaList &&
+    typeof parsedData.audioAndMultimediaList === "string"
+  ) {
+    try {
+      audioAndMultimediaList = JSON.parse(
+        parsedData.audioAndMultimediaList
+      ) as string[];
+    } catch (error) {
+      return { audioAndMultimediaList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (parsedData.otherList && typeof parsedData.otherList === "string") {
+    try {
+      otherList = JSON.parse(parsedData.otherList) as string[];
+    } catch (error) {
+      return { otherList: ["Invalid JSON format"] };
+    }
+  }
+
+  const result = addSchema.safeParse({
+    ...parsedData,
+    comfortList,
+    safetyList,
+    audioAndMultimediaList,
+    otherList,
+  });
+
+  if (!result.success) {
     return result.error.formErrors.fieldErrors;
   }
 
   const data = result.data;
 
   await fs.mkdir("cars", { recursive: true });
-  const filePath = `cars/${crypto.randomUUID()}-${data.file.name}`;
-  await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+  const filePath = `cars/${crypto.randomUUID()}-${data.file?.name}`;
+  if (data.file) {
+    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+  }
 
   await fs.mkdir("public/cars", { recursive: true });
-  const imagePath = `/cars/${crypto.randomUUID()}-${data.image.name}`;
-  await fs.writeFile(
-    `public/${imagePath}`,
-    Buffer.from(await data.image.arrayBuffer())
-  );
+  const imagePath = `/cars/${crypto.randomUUID()}-${data.image?.name}`;
+  if (data.image) {
+    await fs.writeFile(
+      `public/${imagePath}`,
+      Buffer.from(await data.image.arrayBuffer())
+    );
+  }
 
-  const car = await db.car.create({
+  await db.car.create({
     data: {
       isAvailableForPurchase: false,
       name: data.name,
@@ -108,50 +174,30 @@ export async function addCar(prevState: unknown, formData: FormData) {
       priceInCents: data.priceInCents,
       filePath,
       imagePath,
+      comfortList: {
+        create: data.comfortList.map((option) => ({ optionName: option })),
+      },
+      safetyList: {
+        create: data.safetyList.map((option) => ({ optionName: option })),
+      },
+      audioAndMultimediaList: {
+        create: data.audioAndMultimediaList.map((option) => ({
+          optionName: option,
+        })),
+      },
+      otherList: {
+        create: data.otherList.map((option) => ({ optionName: option })),
+      },
     },
   });
-
-  if (data.comfortList && data.comfortList.length > 0) {
-    await db.comfortList.createMany({
-      data: data.comfortList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.safetyList && data.safetyList.length > 0) {
-    await db.safetyList.createMany({
-      data: data.safetyList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.audioAndMultimediaList && data.audioAndMultimediaList.length > 0) {
-    await db.audioAndMultimediaList.createMany({
-      data: data.audioAndMultimediaList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.otherList && data.otherList.length > 0) {
-    await db.otherList.createMany({
-      data: data.otherList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
 
   revalidatePath("/");
   revalidatePath("/cars");
 
   redirect("/admin/cars");
 }
+
+const prisma = new PrismaClient();
 
 const editSchema = addSchema.extend({
   file: fileSchema.optional(),
@@ -163,25 +209,92 @@ export async function updateCar(
   prevState: unknown,
   formData: FormData
 ) {
-  const result = editSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (result.success === false) {
+  type ParsedData = {
+    [key: string]: string | File | undefined;
+    comfortList?: string;
+    safetyList?: string;
+    audioAndMultimediaList?: string;
+    otherList?: string;
+    file?: File;
+    image?: File;
+  };
+
+  const parsedData: ParsedData = Object.fromEntries(formData.entries());
+
+  let comfortList: string[] = [];
+  let safetyList: string[] = [];
+  let audioAndMultimediaList: string[] = [];
+  let otherList: string[] = [];
+
+  if (typeof parsedData.comfortList === "string") {
+    try {
+      comfortList = JSON.parse(parsedData.comfortList) as string[];
+    } catch (error) {
+      return { comfortList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (typeof parsedData.safetyList === "string") {
+    try {
+      safetyList = JSON.parse(parsedData.safetyList) as string[];
+    } catch (error) {
+      return { safetyList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (typeof parsedData.audioAndMultimediaList === "string") {
+    try {
+      audioAndMultimediaList = JSON.parse(
+        parsedData.audioAndMultimediaList
+      ) as string[];
+    } catch (error) {
+      return { audioAndMultimediaList: ["Invalid JSON format"] };
+    }
+  }
+
+  if (typeof parsedData.otherList === "string") {
+    try {
+      otherList = JSON.parse(parsedData.otherList) as string[];
+    } catch (error) {
+      return { otherList: ["Invalid JSON format"] };
+    }
+  }
+
+  const result = editSchema.safeParse({
+    ...parsedData,
+    comfortList,
+    safetyList,
+    audioAndMultimediaList,
+    otherList,
+  });
+
+  if (!result.success) {
     return result.error.formErrors.fieldErrors;
   }
 
   const data = result.data;
-  const car = await db.car.findUnique({ where: { id } });
 
-  if (car == null) return notFound();
+  const car = await prisma.car.findUnique({
+    where: { id },
+    include: {
+      comfortList: true,
+      safetyList: true,
+      audioAndMultimediaList: true,
+      otherList: true,
+    },
+  });
+
+  if (!car) return notFound();
 
   let filePath = car.filePath;
-  if (data.file != null && data.file.size > 0) {
+  if (data.file && data.file.size > 0) {
     await fs.unlink(car.filePath);
     filePath = `cars/${crypto.randomUUID()}-${data.file.name}`;
     await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
   }
 
   let imagePath = car.imagePath;
-  if (data.image != null && data.image.size > 0) {
+  if (data.image && data.image.size > 0) {
     await fs.unlink(`public${car.imagePath}`);
     imagePath = `/cars/${crypto.randomUUID()}-${data.image.name}`;
     await fs.writeFile(
@@ -190,7 +303,7 @@ export async function updateCar(
     );
   }
 
-  await db.car.update({
+  await prisma.car.update({
     where: { id },
     data: {
       name: data.name,
@@ -199,52 +312,60 @@ export async function updateCar(
       year: data.year,
       mileage: data.mileage,
       fuelType: data.fuelType,
+      gearboxType: data.gearboxType,
+      bodyType: data.bodyType,
+      engineDisplacement: data.engineDisplacement,
+      horsePower: data.horsePower,
+      VIN: data.VIN,
+      version: data.version,
+      generation: data.generation,
+      doorsAmount: data.doorsAmount,
+      seatsAmount: data.seatsAmount,
+      color: data.color,
+      colorType: data.colorType,
+      drivetrain: data.drivetrain,
+      CO2Emission: data.CO2Emission,
+      cityFuelConsumption: data.cityFuelConsumption,
+      outOfCityFuelConsumption: data.outOfCityFuelConsumption,
+      countryOfOrigin: data.countryOfOrigin,
+      hasRegistrationNumber: data.hasRegistrationNumber,
+      registeredInPoland: data.registeredInPoland,
+      driverPlateNumber: data.driverPlateNumber,
+      firstRegistrationDate: data.firstRegistrationDate,
+      isFirstOwner: data.isFirstOwner,
+      servicedInASO: data.servicedInASO,
+      isNew: data.isNew,
+      canNegotiate: data.canNegotiate,
       description: data.description,
       priceInCents: data.priceInCents,
       filePath,
       imagePath,
+      comfortList: {
+        deleteMany: {},
+        create: data.comfortList.map((option: string) => ({
+          optionName: option,
+        })),
+      },
+      safetyList: {
+        deleteMany: {},
+        create: data.safetyList.map((option: string) => ({
+          optionName: option,
+        })),
+      },
+      audioAndMultimediaList: {
+        deleteMany: {},
+        create: data.audioAndMultimediaList.map((option: string) => ({
+          optionName: option,
+        })),
+      },
+      otherList: {
+        deleteMany: {},
+        create: data.otherList.map((option: string) => ({
+          optionName: option,
+        })),
+      },
     },
   });
-
-  if (data.comfortList) {
-    await db.comfortList.deleteMany({ where: { carId: car.id } });
-    await db.comfortList.createMany({
-      data: data.comfortList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.safetyList) {
-    await db.safetyList.deleteMany({ where: { carId: car.id } });
-    await db.safetyList.createMany({
-      data: data.safetyList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.audioAndMultimediaList) {
-    await db.audioAndMultimediaList.deleteMany({ where: { carId: car.id } });
-    await db.audioAndMultimediaList.createMany({
-      data: data.audioAndMultimediaList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
-
-  if (data.otherList) {
-    await db.otherList.deleteMany({ where: { carId: car.id } });
-    await db.otherList.createMany({
-      data: data.otherList.map((name) => ({
-        name,
-        carId: car.id,
-      })),
-    });
-  }
 
   revalidatePath("/");
   revalidatePath("/cars");
@@ -268,10 +389,6 @@ export async function deleteCar(id: string) {
 
   await fs.unlink(car.filePath);
   await fs.unlink(`public${car.imagePath}`);
-  await db.comfortList.deleteMany({ where: { carId: id } });
-  await db.safetyList.deleteMany({ where: { carId: id } });
-  await db.audioAndMultimediaList.deleteMany({ where: { carId: id } });
-  await db.otherList.deleteMany({ where: { carId: id } });
 
   revalidatePath("/");
   revalidatePath("/cars");

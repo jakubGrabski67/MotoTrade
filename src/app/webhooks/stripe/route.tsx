@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
         ),
       });
 
-      return NextResponse.json({ success: true }); // Odpowiedź po poprawnym zakończeniu
+      return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ message: "Unhandled event type" }); // Odpowiedź dla innych zdarzeń
+      return NextResponse.json({ message: "Unhandled event type" });
     }
   } catch (error) {
     console.error("Error processing webhook:", error);

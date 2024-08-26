@@ -24,12 +24,238 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
-export function CarForm({ car }: { car?: Car | null }) {
+interface ComfortItem {
+  id: number;
+  optionName: string;
+  carId: string;
+}
+
+interface SafetyItem {
+  id: number;
+  optionName: string;
+  carId: string;
+}
+
+interface AudioAndMultimediaItem {
+  id: number;
+  optionName: string;
+  carId: string;
+}
+
+interface OtherItem {
+  id: number;
+  optionName: string;
+  carId: string;
+}
+
+type ComfortList = ComfortItem[];
+type SafetyList = SafetyItem[];
+type AudioAndMultimediaList = AudioAndMultimediaItem[];
+type OtherList = OtherItem[];
+
+interface CarFormProps {
+  car?: Car | null;
+  comfortList?: ComfortList | null;
+  safetyList?: SafetyList | null;
+  audioAndMultimediaList?: AudioAndMultimediaList | null;
+  otherList?: OtherList | null;
+}
+
+export function CarForm({
+  car,
+  comfortList,
+  safetyList,
+  audioAndMultimediaList,
+  otherList,
+}: CarFormProps) {
+  const [selectedComfortList, setSelectedComfortList] = useState<string[]>(
+    car?.id && Array.isArray(comfortList)
+      ? comfortList
+          .filter((option) => option.carId === car.id)
+          .map((option) => option.optionName)
+      : []
+  );
+
+  const [selectedSafetyList, setSelectedSafetyList] = useState<string[]>(
+    car?.id && Array.isArray(safetyList)
+      ? safetyList
+          .filter((option) => option.carId === car.id)
+          .map((option) => option.optionName)
+      : []
+  );
+
+  const [selectedAudioAndMultimediaList, setSelectedAudioAndMultimediaList] =
+    useState<string[]>(
+      car?.id && Array.isArray(audioAndMultimediaList)
+        ? audioAndMultimediaList
+            .filter((option) => option.carId === car.id)
+            .map((option) => option.optionName)
+        : []
+    );
+
+  const [selectedOtherList, setSelectedOtherList] = useState<string[]>(
+    car?.id && Array.isArray(otherList)
+      ? otherList
+          .filter((option) => option.carId === car.id)
+          .map((option) => option.optionName)
+      : []
+  );
+
   const [error, action] = useFormState(
     car == null ? addCar : updateCar.bind(null, car.id),
-    {}
+    {
+      comfortList: selectedComfortList,
+      safetyList: selectedSafetyList,
+      audioAndMultimediaList: selectedAudioAndMultimediaList,
+      otherList: selectedOtherList,
+    }
   );
+
+  const availableComfortOptions = Array.isArray(comfortList)
+    ? comfortList.map((item) => item.optionName)
+    : [];
+
+  const availableSafetyOptions = Array.isArray(safetyList)
+    ? safetyList.map((item) => item.optionName)
+    : [];
+
+  const availableAudioAndMultimediaOptions = Array.isArray(
+    audioAndMultimediaList
+  )
+    ? audioAndMultimediaList.map((item) => item.optionName)
+    : [];
+
+  const availableOtherOptions = Array.isArray(otherList)
+    ? otherList.map((item) => item.optionName)
+    : [];
+
+  const [comfortListOptions, setComfortListOptions] = useState(
+    Array.from(new Set(availableComfortOptions)).map((optionName) => ({
+      value: optionName,
+      label: optionName,
+    }))
+  );
+
+  const [safetyListOptions, setSafetyListOptions] = useState(
+    Array.from(new Set(availableSafetyOptions)).map((optionName) => ({
+      value: optionName,
+      label: optionName,
+    }))
+  );
+
+  const [audioAndMultimediaListOptions, setAudioAndMultimediaListOptions] =
+    useState(
+      Array.from(new Set(availableAudioAndMultimediaOptions)).map(
+        (optionName) => ({
+          value: optionName,
+          label: optionName,
+        })
+      )
+    );
+
+  const [otherListOptions, setOtherListOptions] = useState(
+    Array.from(new Set(availableOtherOptions)).map((optionName) => ({
+      value: optionName,
+      label: optionName,
+    }))
+  );
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleComfortListChange = (option: string) => {
+    setSelectedComfortList((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const handleSafetyListChange = (option: string) => {
+    setSelectedSafetyList((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const handleAudioAndMultimediaListChange = (option: string) => {
+    setSelectedAudioAndMultimediaList((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const handleOtherListChange = (option: string) => {
+    setSelectedOtherList((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const handleAddNewComfortListOption = (newOption: string) => {
+    const newOptionObject = { value: newOption, label: newOption };
+    setComfortListOptions((prev) => [...prev, newOptionObject]);
+    handleComfortListChange(newOption);
+    setSearchTerm("");
+  };
+
+  const handleAddNewSafetyListOption = (newOption: string) => {
+    const newOptionObject = { value: newOption, label: newOption };
+    setSafetyListOptions((prev) => [...prev, newOptionObject]);
+    handleSafetyListChange(newOption);
+    setSearchTerm("");
+  };
+
+  const handleAddNewAudioAndMultimediaOption = (newOption: string) => {
+    const newOptionObject = { value: newOption, label: newOption };
+    setAudioAndMultimediaListOptions((prev) => [...prev, newOptionObject]);
+    handleAudioAndMultimediaListChange(newOption);
+    setSearchTerm("");
+  };
+
+  const handleAddNewOtherListOption = (newOption: string) => {
+    const newOptionObject = { value: newOption, label: newOption };
+    setOtherListOptions((prev) => [...prev, newOptionObject]);
+    handleOtherListChange(newOption);
+    setSearchTerm("");
+  };
+
+  const filteredComfortListOptions = comfortListOptions.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSafetyListOptions = safetyListOptions.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredAudioAndMultimediaListOptions =
+    audioAndMultimediaListOptions.filter((option) =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  const filteredOtherListOptions = otherListOptions.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const [comfortListOpen, setComfortListOpen] = React.useState(false);
+  const [safetyListOpen, setSafetyListOpen] = React.useState(false);
+  const [audioAndMultimediaListOpen, setAudioAndMultimediaListOpen] =
+    React.useState(false);
+  const [otherListOpen, setOtherListOpen] = React.useState(false);
+
   const [priceInCents, setPriceInCents] = useState<number | undefined>(
     car?.priceInCents
   );
@@ -132,7 +358,15 @@ export function CarForm({ car }: { car?: Car | null }) {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [firstRegistrationDate, setFirstRegistrationDate] = useState("");
-
+  useEffect(() => {
+    if (car?.firstRegistrationDate) {
+      const date = new Date(car.firstRegistrationDate);
+      setYear(date.getFullYear().toString());
+      setMonth((date.getMonth() + 1).toString());
+      setDay(date.getDate().toString());
+      setFirstRegistrationDate(car.firstRegistrationDate);
+    }
+  }, [car]);
   useEffect(() => {
     if (year && month && day) {
       setFirstRegistrationDate(
@@ -144,13 +378,315 @@ export function CarForm({ car }: { car?: Car | null }) {
     }
   }, [year, month, day]);
 
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    formData.append("comfortList", JSON.stringify(selectedComfortList));
+
+    formData.append("safetyList", JSON.stringify(selectedSafetyList));
+
+    formData.append(
+      "audioAndMultimediaList",
+      JSON.stringify(selectedAudioAndMultimediaList)
+    );
+
+    formData.append("otherList", JSON.stringify(selectedOtherList));
+
+    console.log("FormData before sending:", Array.from(formData.entries()));
+
+    const errors = await action(formData);
+    if (errors !== null) {
+      console.error("Errors: ", errors);
+    }
+  };
+
   return (
-    <form action={action} className="space-y-8">
-      
+    <form onSubmit={handleSubmit} action={action} className="space-y-8">
+      <div className="space-y-2">
+        <Label htmlFor="comfortList">Comfort options</Label>
+        <Popover open={comfortListOpen} onOpenChange={setComfortListOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={comfortListOpen}
+              className="w-full justify-between"
+            >
+              {selectedComfortList.length > 0
+                ? selectedComfortList.join(", ")
+                : "Select comfort options..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-full p-0">
+            <Command>
+              <CommandInput
+                placeholder="Search comfort options..."
+                value={searchTerm}
+                onValueChange={(value) => setSearchTerm(value)}
+              />
+              <CommandList>
+                {filteredComfortListOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredComfortListOptions.map((optionName) => (
+                      <CommandItem
+                        key={optionName.value}
+                        value={optionName.value}
+                        onSelect={() => {
+                          handleComfortListChange(optionName.value);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedComfortList.includes(optionName.value)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {optionName.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    No comfort option found. Start typing to add a new option.
+                  </CommandEmpty>
+                )}
+              </CommandList>
+              {filteredComfortListOptions.length === 0 && searchTerm && (
+                <div className="p-2">
+                  <Button
+                    onClick={() => handleAddNewComfortListOption(searchTerm)}
+                  >
+                    Add "{searchTerm}" as a new option
+                  </Button>
+                </div>
+              )}
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {/* {error.comfortList && <div className="text-destructive">{error.comfortList}</div>} */}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="safetyList">Safety options</Label>
+        <Popover open={safetyListOpen} onOpenChange={setSafetyListOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={safetyListOpen}
+              className="w-full justify-between"
+            >
+              {selectedSafetyList.length > 0
+                ? selectedSafetyList.join(", ")
+                : "Select safety options..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-full p-0">
+            <Command>
+              <CommandInput
+                placeholder="Search safety options..."
+                value={searchTerm}
+                onValueChange={(value) => setSearchTerm(value)}
+              />
+              <CommandList>
+                {filteredSafetyListOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredSafetyListOptions.map((optionName) => (
+                      <CommandItem
+                        key={optionName.value}
+                        value={optionName.value}
+                        onSelect={() => {
+                          handleSafetyListChange(optionName.value);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedSafetyList.includes(optionName.value)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {optionName.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    No safety option found. Start typing to add a new option.
+                  </CommandEmpty>
+                )}
+              </CommandList>
+              {filteredSafetyListOptions.length === 0 && searchTerm && (
+                <div className="p-2">
+                  <Button
+                    onClick={() => handleAddNewSafetyListOption(searchTerm)}
+                  >
+                    Add "{searchTerm}" as a new option
+                  </Button>
+                </div>
+              )}
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {/* {error.safetyList && <div className="text-destructive">{error.safetyList}</div>} */}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="audioAndMultimediaList">
+          Audio and multimedia options
+        </Label>
+        <Popover
+          open={audioAndMultimediaListOpen}
+          onOpenChange={setAudioAndMultimediaListOpen}
+        >
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={audioAndMultimediaListOpen}
+              className="w-full justify-between"
+            >
+              {selectedAudioAndMultimediaList.length > 0
+                ? selectedAudioAndMultimediaList.join(", ")
+                : "Select audio and multimedia options..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-full p-0">
+            <Command>
+              <CommandInput
+                placeholder="Search audio and multimedia options..."
+                value={searchTerm}
+                onValueChange={(value) => setSearchTerm(value)}
+              />
+              <CommandList>
+                {filteredAudioAndMultimediaListOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredAudioAndMultimediaListOptions.map((optionName) => (
+                      <CommandItem
+                        key={optionName.value}
+                        value={optionName.value}
+                        onSelect={() => {
+                          handleAudioAndMultimediaListChange(optionName.value);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedAudioAndMultimediaList.includes(
+                              optionName.value
+                            )
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {optionName.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    No audio and multimedia option found. Start typing to add a
+                    new option.
+                  </CommandEmpty>
+                )}
+              </CommandList>
+              {filteredAudioAndMultimediaListOptions.length === 0 &&
+                searchTerm && (
+                  <div className="p-2">
+                    <Button
+                      onClick={() =>
+                        handleAddNewAudioAndMultimediaOption(searchTerm)
+                      }
+                    >
+                      Add "{searchTerm}" as a new option
+                    </Button>
+                  </div>
+                )}
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {/* {error.audioAndMultimediaList && <div className="text-destructive">{error.audioAndMultimediaList}</div>} */}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="otherList">Other options</Label>
+        <Popover open={otherListOpen} onOpenChange={setOtherListOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={otherListOpen}
+              className="w-full justify-between"
+            >
+              {selectedOtherList.length > 0
+                ? selectedOtherList.join(", ")
+                : "Select other options..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-full p-0">
+            <Command>
+              <CommandInput
+                placeholder="Search other options..."
+                value={searchTerm}
+                onValueChange={(value) => setSearchTerm(value)}
+              />
+              <CommandList>
+                {filteredOtherListOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredOtherListOptions.map((optionName) => (
+                      <CommandItem
+                        key={optionName.value}
+                        value={optionName.value}
+                        onSelect={() => {
+                          handleOtherListChange(optionName.value);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedOtherList.includes(optionName.value)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {optionName.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    No other option found. Start typing to add a new option.
+                  </CommandEmpty>
+                )}
+              </CommandList>
+              {filteredOtherListOptions.length === 0 && searchTerm && (
+                <div className="p-2">
+                  <Button
+                    onClick={() => handleAddNewOtherListOption(searchTerm)}
+                  >
+                    Add "{searchTerm}" as a new option
+                  </Button>
+                </div>
+              )}
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {/* {error.otherList && <div className="text-destructive">{error.otherList}</div>} */}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="name">Car offer title</Label>
         <Input
-        placeholder="Enter a car offer title"
+          placeholder="Enter a car offer title"
           type="text"
           id="name"
           name="name"
@@ -164,7 +700,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="model">Model</Label>
           <Input
-          placeholder="Enter a car model"
+            placeholder="Enter a car model"
             type="text"
             id="model"
             name="model"
@@ -225,7 +761,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1">
           <Label htmlFor="priceInCents">Price in Cents</Label>
           <Input
-          placeholder="Enter a car price"
+            placeholder="Enter a car price"
             type="number"
             id="priceInCents"
             name="priceInCents"
@@ -286,7 +822,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 ">
           <Label htmlFor="year">Production year</Label>
           <Input
-          placeholder="Enter a year of production"
+            placeholder="Enter a year of production"
             type="number"
             id="year"
             name="year"
@@ -301,7 +837,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="mileage">Mileage</Label>
           <Input
-          placeholder="Enter a mileage"
+            placeholder="Enter a mileage"
             type="number"
             id="mileage"
             name="mileage"
@@ -375,7 +911,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1">
           <Label htmlFor="engineDisplacement">Engine displacement</Label>
           <Input
-          placeholder="Enter an engine displacement"
+            placeholder="Enter an engine displacement"
             type="number"
             id="engineDisplacement"
             name="engineDisplacement"
@@ -392,7 +928,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="horsePower">Horse power</Label>
           <Input
-          placeholder="Enter a horse power"
+            placeholder="Enter a horse power"
             type="number"
             id="horsePower"
             name="horsePower"
@@ -441,7 +977,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="VIN">VIN</Label>
           <Input
-          placeholder="Enter a VIN number"
+            placeholder="Enter a VIN number"
             type="text"
             id="VIN"
             name="VIN"
@@ -454,7 +990,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1">
           <Label htmlFor="version">Version</Label>
           <Input
-          placeholder="Enter a car version"
+            placeholder="Enter a car version"
             type="text"
             id="version"
             name="version"
@@ -471,7 +1007,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="generation">Generation</Label>
           <Input
-          placeholder="Enter a car generation"
+            placeholder="Enter a car generation"
             type="text"
             id="generation"
             name="generation"
@@ -486,7 +1022,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1">
           <Label htmlFor="doorsAmount">Doors amount</Label>
           <Input
-          placeholder="Enter doors amount"
+            placeholder="Enter doors amount"
             type="number"
             id="doorsAmount"
             name="doorsAmount"
@@ -503,7 +1039,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="seatsAmount">Seats amount</Label>
           <Input
-          placeholder="Enter seats amount"
+            placeholder="Enter seats amount"
             type="number"
             id="seatsAmount"
             name="seatsAmount"
@@ -552,7 +1088,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="color">Color</Label>
           <Input
-          placeholder="Enter a color"
+            placeholder="Enter a color"
             type="text"
             id="color"
             name="color"
@@ -593,7 +1129,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="CO2Emission">CO2 emission amount</Label>
           <Input
-          placeholder="Enter a CO2 emission amount"
+            placeholder="Enter a CO2 emission amount"
             type="text"
             id="CO2Emission"
             name="CO2Emission"
@@ -610,7 +1146,7 @@ export function CarForm({ car }: { car?: Car | null }) {
             City fuel consumption amount
           </Label>
           <Input
-          placeholder="Enter a city fuel consumption amount"
+            placeholder="Enter a city fuel consumption amount"
             type="text"
             id="cityFuelConsumption"
             name="cityFuelConsumption"
@@ -629,7 +1165,7 @@ export function CarForm({ car }: { car?: Car | null }) {
             Out of city fuel consumption amount
           </Label>
           <Input
-          placeholder="Enter an out of city fuel consumption amount"
+            placeholder="Enter an out of city fuel consumption amount"
             type="text"
             id="outOfCityFuelConsumption"
             name="outOfCityFuelConsumption"
@@ -646,7 +1182,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1">
           <Label htmlFor="countryOfOrigin">Country of origin</Label>
           <Input
-          placeholder="Enter a country of origin"
+            placeholder="Enter a country of origin"
             type="text"
             id="countryOfOrigin"
             name="countryOfOrigin"
@@ -719,7 +1255,7 @@ export function CarForm({ car }: { car?: Car | null }) {
         <div className="space-y-2 flex-1 mb-8">
           <Label htmlFor="driverPlateNumber">Driver plate number</Label>
           <Input
-          placeholder="Enter a driver plate number"
+            placeholder="Enter a driver plate number"
             type="text"
             id="driverPlateNumber"
             name="driverPlateNumber"
@@ -757,7 +1293,7 @@ export function CarForm({ car }: { car?: Car | null }) {
                       onChange={(e) => {
                         const value = e.target.value;
 
-                        if (value.length === 4) {
+                        if (value.length >= 4) {
                           const numericValue = parseInt(value, 10);
                           const currentYear = new Date().getFullYear();
 
@@ -895,7 +1431,7 @@ export function CarForm({ car }: { car?: Car | null }) {
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea
-        placeholder="Enter a description"
+          placeholder="Enter a description"
           id="description"
           name="description"
           required
