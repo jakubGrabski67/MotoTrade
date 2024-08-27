@@ -11,9 +11,9 @@ export default async function CarViewDetails({
     where: { id },
     include: {
       comfortList: true,
-     // safetyList: true,
-     // audioAndMultimediaList: true,
-     // otherList: true,
+      safetyList: true,
+      audioAndMultimediaList: true,
+      otherList: true,
     },
   });
 

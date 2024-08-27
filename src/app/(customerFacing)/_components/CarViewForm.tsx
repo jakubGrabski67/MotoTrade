@@ -528,7 +528,7 @@ export function CarViewForm({ car }: { car?: CarWithAdditionalLists | null }) {
                       car.comfortList.map((option) => (
                         <TableRow key={option.id}>
                           <TableCell className="font-medium">
-                            {option.name}
+                            {option.optionName}
                           </TableCell>
                         </TableRow>
                       ))
@@ -557,7 +557,7 @@ export function CarViewForm({ car }: { car?: CarWithAdditionalLists | null }) {
                       car.safetyList.map((option) => (
                         <TableRow key={option.id}>
                           <TableCell className="font-medium">
-                            {option.name}
+                            {option.optionName}
                           </TableCell>
                         </TableRow>
                       ))
@@ -598,7 +598,7 @@ export function CarViewForm({ car }: { car?: CarWithAdditionalLists | null }) {
                       car.audioAndMultimediaList.map((option) => (
                         <TableRow key={option.id}>
                           <TableCell className="font-medium">
-                            {option.name}
+                            {option.optionName}
                           </TableCell>
                         </TableRow>
                       ))
@@ -640,7 +640,7 @@ export function CarViewForm({ car }: { car?: CarWithAdditionalLists | null }) {
                       car.otherList.map((option) => (
                         <TableRow key={option.id}>
                           <TableCell className="font-medium">
-                            {option.name}
+                            {option.optionName}
                           </TableCell>
                         </TableRow>
                       ))
